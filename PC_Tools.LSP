@@ -82,11 +82,14 @@
 ;;;- PC_PLAETTEN -> PC_FLATTEN: anstelle der CADWiesel-Funktion "Plätten" wird die BricsCAD-Funktion "flatten" verwendet.
 ;;;- PC_FLAECHE: aus in Schleife zu pickender Punkte wird eine TIN-Oberfläche erzeugt, Voraussetzung BricsCAD V21 PRO
 
+;;;V(1.0f) 16.03.21
+;;;- PC_FLAECHE: das Tool kann nur verwendet werden, wenn BricsCAD V21 aufwärts PRO oder höher verwendet wird
+
 
 ;;;Intro
 (defun JB_PC_Tools:Intro (str / )
   (princ "\nerstellt durch Bosse-engineering - www.bosse-engineering.com\n")
-  (princ "\n--------------------PC_Tools(1.0e), 02.02.21-----------------")
+  (princ "\n--------------------PC_Tools(1.0f), 16.03.21-----------------")
   (princ str)
   (princ "\n-------------------------------------------------------------")
   )
@@ -224,7 +227,8 @@
 
 ;;;TIN-Oberfläche aus Punkten
 (defun JB_PC_Tools:Flaeche:exe ( / DO KOORDS OBJTIN P)
-  (JBf_Brics_TIN:Ini)
+  (if(JBf_Brics_TIN:Ini)
+    (progn
   (setq Do 'T)
   (while Do
     (if (setq p (getpoint "\nPunkt für TIN-Oberfläche picken (ENTER=Ende):"))
@@ -240,6 +244,8 @@
           )
          )
     )
+  )
+  )
   )
   )
 
@@ -1018,10 +1024,12 @@
   (JBf_init:PC_tools
     '(("CMDECHO" 0)
       ))
-  
+
+
   (JB_PC_Tools:Intro "\nPC_Tools: Obj. im BKS mit \"FLATTEN\" bearbeiten.                 ")
   
-     
+
+  
   (JB_PC_Tools:Flatten:exe)
   (setq OsmodeAlt (getvar "OSMODE"))
   (princ "\nEnde.")
