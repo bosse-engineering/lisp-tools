@@ -85,11 +85,14 @@
 ;;;V(1.0f) 16.03.21
 ;;;- PC_FLAECHE: das Tool kann nur verwendet werden, wenn BricsCAD V21 aufwärts PRO oder höher verwendet wird
 
+;;;V(1.0g) 16.03.21
+;;;- PC_FLATTEN: die Funktion kann im BKS oder WKS ausgeführt werden, es wird grundsätzlich die aktuelle Ansicht als Grundlage verwendet.
+
 
 ;;;Intro
 (defun JB_PC_Tools:Intro (str / )
   (princ "\nerstellt durch Bosse-engineering - www.bosse-engineering.com\n")
-  (princ "\n--------------------PC_Tools(1.0f), 16.03.21-----------------")
+  (princ "\n--------------------PC_Tools(1.0g), 16.03.21-----------------")
   (princ str)
   (princ "\n-------------------------------------------------------------")
   )
@@ -1394,16 +1397,22 @@
 
 ;;;PC_Plaetten => Objekte aus BKS auswählen, ins WKS transformieren, an Plaetten übergeben, danach wieder ins BKS zurücktransformieren
 (defun JB_PC_Tools:Flatten:exe ( / LASTOBJ)
-  (if (setq JB_PC_Tools$$AWS (JB_PC_Tools:BSK->WKS:exe 'T))
-    (progn
-      (setq lastObj (entlast))
+
+  (if (JBf_Brics_Flatten:Pro21-p)
+    (if (and(princ "\nWählen Sie Objekte, die geflattet werden sollen:")
+            (setq JB_PC_Tools$$AWS (ssget));(JB_PC_Tools:BSK->WKS:exe 'T))
+            )
+      ;(progn
+      ;(setq lastObj (entlast))
       ;(c:CADW_Plaetten)
-      (command "_.flatten" "_el" 0.0 "_ex" "_no" JB_PC_Tools$$AWS "")
-      (setq JB_PC_Tools$$AWS(JB_PC_Tools:LastObjs2Aws JB_PC_Tools$$AWS lastObj))
-      (setq JB_PC_Tools$$AWS(JB_PC_Tools:AwsPurge JB_PC_Tools$$AWS))
       
-      (JB_PC_Tools:Flatten:exe:Return2Bks JB_PC_Tools$$AWS)
-      )
+      (command "_.flatten" "_el" 0.0 "_ex" "_no" JB_PC_Tools$$AWS "")
+      ;(setq JB_PC_Tools$$AWS(JB_PC_Tools:LastObjs2Aws JB_PC_Tools$$AWS lastObj))
+      ;(setq JB_PC_Tools$$AWS(JB_PC_Tools:AwsPurge JB_PC_Tools$$AWS))
+      
+      ;(JB_PC_Tools:Flatten:exe:Return2Bks JB_PC_Tools$$AWS)
+      ;)
+    )
     )
 
   (setq JB_PC_Tools$$AWS nil)
@@ -2689,11 +2698,22 @@
   
 )
 
+;;;Prüfen, ob BricsCAD Pro V21 aufwärts, allgemeine Meldung
+(defun JBf_Brics_Flatten:Pro21-p ( / )
+  (or(and(=(strcase(getvar "PROGRAM"))"BRICSCAD")         
+         (>=(atof(getvar "ACADVER"))22.1)
+         )
+         (alert "Hinweis: Für die Nutzung der der PC_Flatten-Funktion wird BricsCAD 21 aufwärts benötigt.")
+  )
+  
+)
+
 ;;;vor Nutzung der TIN-Funktionen nutzen
 (defun JBf_Brics_TIN:Ini ( / )
   (if(JBf_Brics_TIN:Pro21-p)
     (vl-load-tin))
 )
+
 
 ;;;TIN aus Koordiantenliste erstellen => Rückgabe TIN-Surface als obj
 (defun JBf_Brics_TIN:CreateWithPoints (koords / minPoint maxPoint objTIN)
